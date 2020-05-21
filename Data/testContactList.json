@@ -1,0 +1,143 @@
+﻿[
+  {
+    "id": 0,
+    "firstName": "Martin",
+    "lastName": "Krpan",
+    "address":  "Novo Mesto",
+    "phone": "040100123"
+  },
+  {
+    "id": 1,
+    "firstName": "Peter",
+    "lastName": "Klepec",
+    "address": "Novo Mesto",
+    "phone": "040100234"
+  },
+  {
+    "id": 2,
+    "firstName": "Bedanc",
+    "lastName": "Grozni",
+    "address": "Novo Mesto",
+    "phone": "040100345"
+  },
+  {
+    "id": 3,
+    "firstName": "Teta",
+    "lastName": "Pehta",
+    "address": "Novo Mesto",
+    "phone": "040100567"
+  },
+  {
+    "id": 4,
+    "firstName": "Mojca",
+    "lastName": "Pokrajculja",
+    "address": "Novo Mesto",
+    "phone": "040100678"
+  },
+  {
+    "id": 5,
+    "firstName": "Ivan",
+    "lastName": "Cankar",
+    "address": "Vrhnika",
+    "phone": "040200123"
+  },
+  {
+    "id": 6,
+    "firstName": "Dragotin",
+    "lastName": "Kette",
+    "address": "Prem",
+    "phone": "040200234"
+  },
+  {
+    "id": 7,
+    "firstName": "Ivana",
+    "lastName": "Kobilica",
+    "address": "Novo Mesto",
+    "phone": "040200567"
+  },
+  {
+    "id": 8,
+    "firstName": "Elza",
+    "lastName": "Budau",
+    "address": "Ljubljana",
+    "phone": "040200678"
+  },
+  {
+    "id": 9,
+    "firstName": "Srečko",
+    "lastName": "Kosovel",
+    "address": "Sežana",
+    "phone": "040200789"
+  },
+  {
+    "id": 10,
+    "firstName": "Ciril",
+    "lastName": "Kosmač",
+    "address": "Novo Mesto",
+    "phone": "040101123"
+  },
+  {
+    "id": 11,
+    "firstName": "Kajetan",
+    "lastName": "Kovič",
+    "address": "Novo Mesto",
+    "phone": "040101234"
+  },
+  {
+    "id": 12,
+    "firstName": "Berkmandlc",
+    "lastName": "Grozni",
+    "address": "Novo Mesto",
+    "phone": "040101345"
+  },
+  {
+    "id": 13,
+    "firstName": "Julija",
+    "lastName": "Primic",
+    "address": "Novo Mesto",
+    "phone": "040101567"
+  },
+  {
+    "id": 14,
+    "firstName": "Vida",
+    "lastName": "Lepa",
+    "address": "Novo Mesto",
+    "phone": "040101678"
+  },
+  {
+    "id": 15,
+    "firstName": "Anton",
+    "lastName": "Ingolič",
+    "address": "Novo Mesto",
+    "phone": "040201123"
+  },
+  {
+    "id": 16,
+    "firstName": "Janez",
+    "lastName": "Jalen",
+    "address": "Novo Mesto",
+    "phone": "040201234"
+  },
+  {
+    "id": 17,
+    "firstName": "Ela",
+    "lastName": "Peroci",
+    "address": "Novo Mesto",
+    "phone": "040201567"
+  },
+  {
+    "id": 18,
+    "firstName": "Svetlana",
+    "lastName": "Makarovič",
+    "address": "Novo Mesto",
+    "phone": "040201678"
+  },
+  {
+    "id": 19,
+    "firstName": "Ivan",
+    "lastName": "Vidav",
+    "address": "Novo Mesto",
+    "phone": "040201789"
+  }
+
+]
