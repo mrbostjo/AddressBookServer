@@ -1,0 +1,4 @@
+*.cache
+*.suo
+.dtbcache.v2
+obj
