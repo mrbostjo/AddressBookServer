@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using AddressBookServer.Data;
 using AddressBookServer.Models;
+using System.Linq.Expressions;
 
 namespace AddressBookServer.Controllers
 {
@@ -50,6 +51,69 @@ namespace AddressBookServer.Controllers
         public async Task<ActionResult<IEnumerable<Contact>>> GetContact()
         {
             return await _context.Contact.ToListAsync();
+        }
+
+        // GET: api/contacts/search?firstName=&lastName=&address=&phone=
+        [HttpGet()]
+        [Route("search")]
+        public async Task<ActionResult<IEnumerable<Contact>>> Search([FromQuery] string firstName, [FromQuery] string lastName, [FromQuery] string address, [FromQuery] string phone)
+        {
+            var terms = new SearchComposer(firstName, lastName, address, phone);
+            terms.Prepare();
+
+            if (terms.Count == 0)//if no search params, return all
+            {
+                return _context.Contact.ToList();
+            }
+
+            IQueryable<Contact> result = default;
+            foreach (ContactProperties prop in terms.Keys)
+            {
+                if (result == default || (!result.Any()))
+                {
+                    result = _context.Contact.Where(TermQuery(terms[prop], prop));//Do initial query
+                }
+                else
+                {
+                    result = result.Where(TermQuery(terms[prop], prop));//Query among returned results to get intersection
+                }
+            }
+            if (result != default)
+            {
+                return result.Distinct().OrderBy(contact => contact.firstName).ToList<Contact>();
+            }
+
+            return NotFound();
+        }
+
+
+        private Expression<Func<Contact, bool>> TermQuery(string term, ContactProperties property)
+        {
+            Expression<Func<Contact, bool>> searchExp = default;
+            switch (property)
+            {
+                case ContactProperties.FirstName:
+                    {
+                        searchExp = (contact => contact.firstName.Contains(term));
+                        break;
+                    }
+                case ContactProperties.LastName:
+                    {
+                        searchExp = (contact => contact.lastName.Contains(term));
+                        break;
+                    }
+                case ContactProperties.Address:
+                    {
+                        searchExp = (contact => contact.address.Contains(term));
+                        break;
+                    }
+                case ContactProperties.Phone:
+                    {
+                        searchExp = (contact => contact.phone.Contains(term));
+                        break;
+                    }
+            }
+            return searchExp;
         }
 
         // GET: api/Contacts/5
