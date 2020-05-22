@@ -21,7 +21,7 @@ namespace AddressBookServer.Controllers
         public ContactsController(AddressBookServerContext context)
         {
             _context = context;
-            LoadTestData(context);
+            //LoadTestData(context);
         }
 
         private static List<Contact> contactList = new List<Contact>();
@@ -48,22 +48,30 @@ namespace AddressBookServer.Controllers
 
         // GET: api/Contacts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Contact>>> GetContact()
+        public async Task<ActionResult<IEnumerable<Contact>>> GetContact([FromQuery] string page, [FromQuery] string pageSize)
         {
-            return await _context.Contact.ToListAsync();
+            return await PaginatedList<Contact>.CreateAsync(_context.Contact.AsNoTracking(), page, pageSize);
+        }
+
+        // GET: api/contacts/count
+        [HttpGet]
+        [Route("count")]
+        public async Task<ActionResult<int>> GetContactCount()
+        {
+            return await _context.Contact.CountAsync();
         }
 
         // GET: api/contacts/search?firstName=&lastName=&address=&phone=
         [HttpGet()]
         [Route("search")]
-        public async Task<ActionResult<IEnumerable<Contact>>> Search([FromQuery] string firstName, [FromQuery] string lastName, [FromQuery] string address, [FromQuery] string phone)
+        public async Task<ActionResult<IEnumerable<Contact>>> Search([FromQuery] string firstName, [FromQuery] string lastName, [FromQuery] string address, [FromQuery] string phone, [FromQuery] string page, [FromQuery] string pageSize)
         {
             var terms = new SearchComposer(firstName, lastName, address, phone);
             terms.Prepare();
 
             if (terms.Count == 0)//if no search params, return all
             {
-                return _context.Contact.ToList();
+                return await GetContact(page, pageSize);
             }
 
             IQueryable<Contact> result = default;
@@ -80,7 +88,41 @@ namespace AddressBookServer.Controllers
             }
             if (result != default)
             {
-                return result.Distinct().OrderBy(contact => contact.firstName).ToList<Contact>();
+
+                return await PaginatedList<Contact>.CreateAsync(result, page, pageSize);
+            }
+
+            return NotFound();
+        }
+
+        // GET: api/contacts/searchCount?firstName=&lastName=&address=&phone=
+        [HttpGet()]
+        [Route("searchCount")]
+        public async Task<ActionResult<int>> SearchCount([FromQuery] string firstName, [FromQuery] string lastName, [FromQuery] string address, [FromQuery] string phone)
+        {
+            var terms = new SearchComposer(firstName, lastName, address, phone);
+            terms.Prepare();
+
+            if (terms.Count == 0)//if no search params, return all
+            {
+                return await GetContactCount();
+            }
+
+            IQueryable<Contact> result = default;
+            foreach (ContactProperties prop in terms.Keys)
+            {
+                if (result == default || (!result.Any()))
+                {
+                    result = _context.Contact.AsNoTracking().Where(TermQuery(terms[prop], prop));//Do initial query
+                }
+                else
+                {
+                    result = result.Where(TermQuery(terms[prop], prop));//Query among returned results to get intersection
+                }
+            }
+            if (result != default)
+            {
+                return await result.Distinct().OrderBy(contact => contact.firstName).CountAsync();
             }
 
             return NotFound();
@@ -141,21 +183,25 @@ namespace AddressBookServer.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(contact).State = EntityState.Modified;
+            if (IsAllowed(contact))
+            {
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ContactExists(id))
+                _context.Entry(contact).State = EntityState.Modified;
+
+                try
                 {
-                    return NotFound();
+                    await _context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    throw;
+                    if (!ContactExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
 
@@ -168,10 +214,17 @@ namespace AddressBookServer.Controllers
         [HttpPost]
         public async Task<ActionResult<Contact>> PostContact(Contact contact)
         {
-            _context.Contact.Add(contact);
-            await _context.SaveChangesAsync();
+            if (IsAllowed(contact))
+            {
+                _context.Contact.Add(contact);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetContact", new { id = contact.id }, contact);
+                return CreatedAtAction("GetContact", new { id = contact.id }, contact);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         // DELETE: api/Contacts/5
@@ -193,6 +246,47 @@ namespace AddressBookServer.Controllers
         private bool ContactExists(long id)
         {
             return _context.Contact.Any(e => e.id == id);
+        }
+
+        private bool IsAllowed(Contact contact)
+        {
+            if (ContactExists(contact.id))
+            {
+                var existingContact = _context.Contact.AsNoTracking().Where(cont => cont.id == contact.id).FirstOrDefault();
+                if(IsContactEqual(contact, existingContact))
+                {
+                    return false;
+                }
+                else
+                {
+                    if(existingContact.phone != contact.phone)
+                    {
+                        return (!IsPhoneUnique(contact.phone));
+                    }
+                }
+            }
+            else
+            {
+                return (!IsPhoneUnique(contact.phone));
+            }
+            return true;
+        }
+
+        private bool IsContactEqual(Contact entry1, Contact entry2)
+        {
+            return (
+                (entry1.id == entry2.id) &&
+                (entry1.firstName == entry2.firstName) &&
+                (entry1.lastName == entry2.lastName) &&
+                (entry1.address == entry2.address) &&
+                (entry1.phone == entry2.phone)
+                );
+        }
+
+        private bool IsPhoneUnique(string phone)
+        {
+            int dupCount = _context.Contact.AsNoTracking().Where(contact => contact.phone == phone).Count();
+            return (dupCount > 0);//number already exists!
         }
     }
 }
