@@ -2,3 +2,6 @@
 *.suo
 .dtbcache.v2
 obj
+netcoreapp3.1
+*.user
+config
